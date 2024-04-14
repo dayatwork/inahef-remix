@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EXHIBITOR
+  VISITOR
+}
+
+model User {
+  id               String     @id @default(uuid())
+  ticketNumber     Int        @default(autoincrement())
+  name             String
+  email            String     @unique
+  phone            String?    @unique
+  role             Role       @default(VISITOR)
+  avatar           String?
+  googleProviderId String?
+  password         Password?
+  jobTitle         String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  exhibitor        Exhibitor? @relation(fields: [exhibitorId], references: [id])
+  exhibitorId      String?
+  isActive         Boolean    @default(true)
+  readMessages     Message[]
+  orders           Order[]
+}
+
+model Password {
+  hash   String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+}
+
+model Package {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  priceInIDR Int
+  details    String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  exhibitors Exhibitor[]
+}
+
+model Exhibitor {
+  id             String    @id @default(uuid())
+  name           String
+  email          String?
+  logo           String?
+  website        String?
+  country        String?
+  package        Package   @relation(fields: [packageId], references: [id])
+  packageId      String
+  users          User[]
+  registrationId String?
+  products       Product[]
+}
+
+model Message {
+  id       String    @id @default(uuid())
+  from     String
+  subject  String
+  content  String
+  sentAt   DateTime  @default(now())
+  readAt   DateTime?
+  readBy   User      @relation(fields: [readById], references: [id])
+  readById String
+}
+
+model Rundown {
+  id          String   @id @default(uuid())
+  startAt     DateTime
+  endAt       DateTime
+  title       String
+  description String?
+}
+
+enum PartnerType {
+  EVENT_PARTNER
+  MEDIA_PARTNER
+}
+
+model Partner {
+  id             String      @id @default(uuid())
+  type           PartnerType
+  name           String
+  logo           String
+  registrationId String?
+}
+
+enum RegistrationType {
+  EXHIBITOR
+  EVENT_PARTNER
+  MEDIA_PARTNER
+}
+
+enum RegistrationStatus {
+  WAITING_CONFIRMATION
+  APPROVED
+  REJECTED
+}
+
+model Registration {
+  id             String             @id @default(uuid())
+  type           RegistrationType
+  email          String             @unique
+  phone          String
+  companyName    String
+  companyEmail   String
+  companyPhone   String
+  companyWebsite String?
+  country        String
+  status         RegistrationStatus @default(WAITING_CONFIRMATION)
+}
+
+model ProductCategory {
+  id      String    @id @default(uuid())
+  name    String    @unique
+  Product Product[]
+}
+
+model Product {
+  id           String          @id @default(uuid())
+  category     ProductCategory @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  exhibitor    Exhibitor       @relation(fields: [exhibitorId], references: [id])
+  exhibitorId  String
+  name         String
+  code         String?
+  externalLink String?
+  priceInIDR   Int
+  details      String?
+  available    Boolean         @default(true)
+  images       ProductImage[]
+  orders       Order[]
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  url       String
+  label     String
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  TAKING_PLACE
+  SUCCEED
+  FAIL
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product     @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  status    OrderStatus @default(TAKING_PLACE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
