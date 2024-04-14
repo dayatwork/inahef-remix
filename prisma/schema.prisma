@@ -59,14 +59,17 @@ model Exhibitor {
   id             String    @id @default(uuid())
   name           String
   email          String?
+  phone          String?
   logo           String?
   website        String?
   country        String?
-  package        Package   @relation(fields: [packageId], references: [id])
-  packageId      String
+  package        Package?  @relation(fields: [packageId], references: [id])
+  packageId      String?
   users          User[]
   registrationId String?
   products       Product[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Message {

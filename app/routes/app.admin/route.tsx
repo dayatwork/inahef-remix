@@ -1,5 +1,7 @@
+import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet } from "@remix-run/react";
 import {
+  ArrowLeft,
   Bell,
   CircleUser,
   FileText,
@@ -13,7 +15,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import { requireRole } from "~/utils/guard.server";
 
 const navigations: { icon: LucideIcon; label: string; to: string }[] = [
   { icon: Home, label: "Dashboard", to: "/app/admin/dashboard" },
@@ -32,6 +35,11 @@ const navigations: { icon: LucideIcon; label: string; to: string }[] = [
   { icon: Mail, label: "Messages", to: "/app/admin/messages" },
   { icon: FileText, label: "Registrations", to: "/app/admin/registrations" },
 ];
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  await requireRole(request, "ADMIN", "/app/home");
+  return null;
+}
 
 export default function AdminLayout() {
   return (
@@ -114,22 +122,35 @@ export default function AdminLayout() {
               </div>
             </form>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/app/home"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to App Home
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="rounded-full"
+                >
+                  <CircleUser className="h-5 w-5" />
+                  <span className="sr-only">Toggle user menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
         <Outlet />
         {/* <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">

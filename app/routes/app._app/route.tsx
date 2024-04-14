@@ -1,6 +1,6 @@
 import { Link, Outlet } from "@remix-run/react";
-import { CircleUser, Menu, Package2 } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { ArrowRight, CircleUser, Menu, Package2 } from "lucide-react";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import { useLoggedInUser } from "~/utils/auth";
 
 export default function AppLayoutHome() {
+  const loggedInUser = useLoggedInUser();
   return (
     <div className="flex min-h-screen w-full flex-col">
       <header className="sticky top-0 h-16 border-b bg-background">
@@ -94,7 +96,16 @@ export default function AppLayoutHome() {
               </nav>
             </SheetContent>
           </Sheet>
-          <div>
+          <div className="flex gap-4 items-center">
+            {loggedInUser?.role === "ADMIN" && (
+              <Link
+                to="/app/admin/dashboard"
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                Go to Admin Dashboard
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
