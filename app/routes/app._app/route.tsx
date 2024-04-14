@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import { useLoggedInUser } from "~/utils/auth";
+import logo from "~/assets/logo.png";
 
 export default function AppLayoutHome() {
   const loggedInUser = useLoggedInUser();
@@ -23,7 +24,13 @@ export default function AppLayoutHome() {
               to="/app/home"
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
-              <Package2 className="h-6 w-6" />
+              <img
+                src={logo}
+                alt="logo"
+                className="object-contain"
+                width={40}
+                height={40}
+              />
               <span>INAHEF 2024</span>
             </Link>
             <Link
@@ -123,7 +130,13 @@ export default function AppLayoutHome() {
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <form action="/logout" method="post" className="w-full">
+                    <button type="submit" className="flex w-full">
+                      Logout
+                    </button>
+                  </form>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

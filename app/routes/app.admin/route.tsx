@@ -27,6 +27,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import { requireRole } from "~/utils/guard.server";
+import logo from "~/assets/logo.png";
 
 const navigations: { icon: LucideIcon; label: string; to: string }[] = [
   { icon: Home, label: "Dashboard", to: "/app/admin/dashboard" },
@@ -51,7 +52,13 @@ export default function AdminLayout() {
               to="/app/admin"
               className="flex items-center gap-2 font-semibold"
             >
-              <Package2 className="h-6 w-6" />
+              <img
+                src={logo}
+                alt="logo"
+                className="object-contain"
+                width={40}
+                height={40}
+              />
               <span className="">INAHEF 2024</span>
             </Link>
             <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
@@ -147,7 +154,13 @@ export default function AdminLayout() {
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <form action="/logout" method="post" className="w-full">
+                    <button type="submit" className="flex w-full">
+                      Logout
+                    </button>
+                  </form>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

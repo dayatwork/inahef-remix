@@ -11,6 +11,7 @@ import { Label } from "~/components/ui/label";
 import { authenticator } from "~/utils/auth.server";
 import { commitSession, getSession } from "~/utils/session.server";
 import { redirectWithToast } from "~/utils/toast.server";
+import logo from "~/assets/logo.png";
 
 const loginSchema = z.object({
   email: z
@@ -81,6 +82,19 @@ export default function Login() {
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
+            <Link
+              to="/"
+              className="flex items-center gap-2 justify-center flex-col mb-8"
+            >
+              <img
+                src={logo}
+                alt="Logo"
+                className="object-contain inline-block"
+                width={50}
+                height={50}
+              />
+              <span className="text-lg font-bold">INAHEF 2024</span>
+            </Link>
             <h1 className="text-3xl font-bold">Login</h1>
             <p className="text-balance text-muted-foreground">
               Enter your email below to login to your account
