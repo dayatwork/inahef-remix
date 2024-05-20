@@ -45,31 +45,20 @@ model Password {
   userId String @unique
 }
 
-model Package {
-  id         String      @id @default(uuid())
-  name       String      @unique
-  priceInIDR Int
-  details    String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  exhibitors Exhibitor[]
-}
-
 model Exhibitor {
-  id             String    @id @default(uuid())
-  name           String
-  email          String?
-  phone          String?
-  logo           String?
-  website        String?
-  country        String?
-  package        Package?  @relation(fields: [packageId], references: [id])
-  packageId      String?
-  users          User[]
-  registrationId String?
-  products       Product[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id              String    @id @default(uuid())
+  name            String
+  email           String?
+  phone           String?
+  logo            String?
+  website         String?
+  country         String?
+  users           User[]
+  registrationId  String?
+  products        Product[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  exhibitorBooths Booth[]
 }
 
 model Message {
@@ -104,49 +93,56 @@ model Partner {
   registrationId String?
 }
 
-enum RegistrationType {
-  EXHIBITOR
-  EVENT_PARTNER
-  MEDIA_PARTNER
-}
-
-enum RegistrationStatus {
-  WAITING_CONFIRMATION
-  APPROVED
-  REJECTED
-}
-
-model Registration {
-  id             String             @id @default(uuid())
-  type           RegistrationType
-  email          String             @unique
-  phone          String
-  companyName    String
-  companyEmail   String
-  companyPhone   String
-  companyWebsite String?
-  country        String
-  status         RegistrationStatus @default(WAITING_CONFIRMATION)
-}
-
 model ProductCategory {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  Product Product[]
+  id                                     String                                   @id @default(uuid())
+  name                                   String                                   @unique
+  color                                  String                                   @unique
+  description                            String                                   @default("")
+  booth                                  Booth[]
+  exhibitorRegistrationProductCategories ExhibitorRegistrationProductCategories[]
+}
+
+model BoothSize {
+  id                String    @id @default(uuid())
+  length            Int       @db.SmallInt
+  width             Int       @db.SmallInt
+  defaultPriceInIDR Int
+  booths            Booth[]
+  packages          Package[]
+
+  @@unique([length, width])
+}
+
+enum BoothStatus {
+  AVAILABLE
+  OCCUPIED
+  BOOKED
+}
+
+model Booth {
+  id                          String                       @id @default(uuid())
+  boothNumber                 Int                          @unique
+  productCategory             ProductCategory              @relation(fields: [productCategoryId], references: [id])
+  productCategoryId           String
+  size                        BoothSize                    @relation(fields: [sizeId], references: [id])
+  sizeId                      String
+  priceInIDR                  Int
+  status                      BoothStatus                  @default(AVAILABLE)
+  exhibitorRegistrationBooths ExhibitorRegistrationBooth[]
+  exhibitor                   Exhibitor?                   @relation(fields: [exhibitorId], references: [id])
+  exhibitorId                 String?
 }
 
 model Product {
-  id           String          @id @default(uuid())
-  category     ProductCategory @relation(fields: [categoryId], references: [id])
-  categoryId   String
-  exhibitor    Exhibitor       @relation(fields: [exhibitorId], references: [id])
+  id           String         @id @default(uuid())
+  exhibitor    Exhibitor      @relation(fields: [exhibitorId], references: [id])
   exhibitorId  String
   name         String
   code         String?
   externalLink String?
   priceInIDR   Int
   details      String?
-  available    Boolean         @default(true)
+  available    Boolean        @default(true)
   images       ProductImage[]
   orders       Order[]
 }
@@ -176,4 +172,97 @@ model Order {
   status    OrderStatus @default(TAKING_PLACE)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+}
+
+enum RegistrationStatus {
+  WAITING_CONFIRMATION
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+}
+
+model ExhibitorRegistration {
+  id                          String                                   @id @default(uuid())
+  picName                     String
+  picEmail                    String
+  picPhone                    String
+  companyName                 String
+  companyEmail                String
+  companyPhone                String
+  companyWebsite              String?
+  country                     String
+  registrationStatus          RegistrationStatus                       @default(WAITING_CONFIRMATION)
+  productCategories           ExhibitorRegistrationProductCategories[]
+  exhibitorRegistrationBooths ExhibitorRegistrationBooth[]
+  exhibitorRegistrationItems  ExhibitorRegistrationItem[]
+  totalPrice                  Int
+  paymentStatus               PaymentStatus                            @default(UNPAID)
+  registrationDate            DateTime                                 @default(now())
+  paidAt                      DateTime?
+  approvedAt                  DateTime?
+}
+
+model ExhibitorRegistrationProductCategories {
+  exhibitorRegistration   ExhibitorRegistration @relation(fields: [exhibitorRegistrationId], references: [id])
+  exhibitorRegistrationId String
+  productCategory         ProductCategory       @relation(fields: [productCategoryId], references: [id])
+  productCategoryId       String
+
+  @@id([exhibitorRegistrationId, productCategoryId])
+}
+
+model RegistrationItem {
+  id                         String                      @id @default(uuid())
+  name                       String
+  description                String                      @default("")
+  unit                       String
+  unitPrice                  Int
+  exhibitorRegistrationItems ExhibitorRegistrationItem[]
+  packageItems               PackageItem[]
+}
+
+model ExhibitorRegistrationItem {
+  id                      String                @id @default(uuid())
+  exhibitorRegistration   ExhibitorRegistration @relation(fields: [exhibitorRegistrationId], references: [id])
+  exhibitorRegistrationId String
+  registrationItem        RegistrationItem      @relation(fields: [registrationItemId], references: [id])
+  registrationItemId      String
+  quantity                Int                   @db.SmallInt
+  totalPrice              Int
+
+  @@unique([registrationItemId, exhibitorRegistrationId])
+}
+
+model ExhibitorRegistrationBooth {
+  id                      String                @id @default(uuid())
+  exhibitorRegistration   ExhibitorRegistration @relation(fields: [exhibitorRegistrationId], references: [id])
+  exhibitorRegistrationId String
+  booth                   Booth                 @relation(fields: [boothId], references: [id])
+  boothId                 String
+  price                   Int
+}
+
+model Package {
+  id              String        @id @default(uuid())
+  name            String        @unique
+  boothSize       BoothSize     @relation(fields: [boothSizeId], references: [id])
+  boothSizeId     String
+  priceInIDR      Int
+  promoPriceInIDR Int
+  isPromo         Boolean       @default(false)
+  packageItems    PackageItem[]
+}
+
+model PackageItem {
+  id                 String           @id @default(uuid())
+  package            Package          @relation(fields: [packageId], references: [id])
+  packageId          String
+  registrationItem   RegistrationItem @relation(fields: [registrationItemId], references: [id])
+  registrationItemId String
+  quantity           Int              @db.SmallInt
 }
